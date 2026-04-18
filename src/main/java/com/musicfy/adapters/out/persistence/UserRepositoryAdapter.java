@@ -37,6 +37,11 @@ public class UserRepositoryAdapter implements UserRepository {
         UserEntity.deleteById(id);
     }
 
+    @Override
+    public boolean existsByEmail(String email) {
+        return UserEntity.find("email", email).firstResultOptional().isPresent();
+    }
+
     private User toDomain(UserEntity e) {
         User u = new User(e.username, e.email);
         u.setId(e.id);
