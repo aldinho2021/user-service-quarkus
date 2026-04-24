@@ -40,6 +40,17 @@ public class UserService implements UserUseCase {
 
     @Override
     @Transactional
+    public User update(Long id, User user) {
+        getRequiredUser(id);
+        if (repository.existsByEmailAndIdNot(user.getEmail(), id)) {
+            throw new DuplicateEmailException(user.getEmail());
+        }
+        user.setId(id);
+        return repository.update(user);
+    }
+
+    @Override
+    @Transactional
     public void delete(Long id) {
         getRequiredUser(id);
         repository.deleteById(id);
