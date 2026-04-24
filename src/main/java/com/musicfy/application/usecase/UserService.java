@@ -1,5 +1,7 @@
 package com.musicfy.application.usecase;
 
+import com.musicfy.application.event.UserCreatedEvent;
+import com.musicfy.application.event.UserEventPublisher;
 import com.musicfy.application.exception.DuplicateEmailException;
 import com.musicfy.application.port.in.UserUseCase;
 import com.musicfy.application.port.out.UserRepository;
@@ -14,9 +16,11 @@ import java.util.List;
 public class UserService implements UserUseCase {
 
     private final UserRepository repository;
+    private final UserEventPublisher userEventPublisher;
 
-    public UserService(UserRepository repository) {
+    public UserService(UserRepository repository, UserEventPublisher userEventPublisher) {
         this.repository = repository;
+        this.userEventPublisher = userEventPublisher;
     }
 
     @Override
@@ -35,8 +39,13 @@ public class UserService implements UserUseCase {
         if (repository.existsByEmail(user.getEmail())) {
             throw new DuplicateEmailException(user.getEmail());
         }
-        return repository.save(user);
+        User created = repository.save(user);
+        userEventPublisher.publishUserCreated(
+                new UserCreatedEvent(created.getId(), created.getUsername(), created.getEmail())
+        );
+        return created;
     }
+
 
     @Override
     @Transactional
