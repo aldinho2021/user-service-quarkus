@@ -33,6 +33,14 @@ public class UserRepositoryAdapter implements UserRepository {
     }
 
     @Override
+    public User update(User user) {
+        UserEntity entity = (UserEntity) UserEntity.findById(user.getId());
+        entity.username = user.getUsername();
+        entity.email = user.getEmail();
+        return toDomain(entity);
+    }
+
+    @Override
     public void deleteById(Long id) {
         UserEntity.deleteById(id);
     }
@@ -40,6 +48,11 @@ public class UserRepositoryAdapter implements UserRepository {
     @Override
     public boolean existsByEmail(String email) {
         return UserEntity.find("email", email).firstResultOptional().isPresent();
+    }
+
+    @Override
+    public boolean existsByEmailAndIdNot(String email, Long id) {
+        return UserEntity.find("email = ?1 and id != ?2", email, id).firstResultOptional().isPresent();
     }
 
     private User toDomain(UserEntity e) {
